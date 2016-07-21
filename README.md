@@ -1,6 +1,10 @@
 # RichTextView
 A sample to use library for android widget GapFillTextView.
 
+## Snapshots
+![Editor box](./style-editor.png)
+![Popup list](./style-popup.png)
+
 ##Instructions
 'GapFillTextView' can be treated as normal text view, besides that, it provides 2 ways to fill the 
 gaps marked by '{*}'.
@@ -9,9 +13,9 @@ gaps marked by '{*}'.
 Besides the stand html text string, you also can use predefined combined symbols as a shortcut in 
 the raw string which will be consumed by the widget.
 
-bold : \*\*bold\*\* or \_\_bold\_\_
-highlight: \*\*\*highlighted\*\*\* or \_\_\_highlighted\_\_\_
-italic: \*italic\* or \_italic\_ 
+*bold : \*\*bold\*\* or \_\_bold\_\_
+*highlight: \*\*\*highlighted\*\*\* or \_\_\_highlighted\_\_\_
+*italic: \*italic\* or \_italic\_
  
 ### License
 ```
