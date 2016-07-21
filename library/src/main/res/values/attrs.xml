@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="GapFillTextView">
+        <attr name="correct_color" format="color" />
+        <attr name="wrong_color" format="color" />
+        <attr name="gapFillInputStyle"/>
+    </declare-styleable>
+
+    <attr name="gapFillInputStyle" format="enum">
+        <enum name="PopupWindow" value="0"/>
+        <enum name="EditorText" value="1"/>
+    </attr>
+</resources>

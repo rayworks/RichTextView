@@ -1,0 +1,33 @@
+<resources>
+    <string name="app_name">RichTextView</string>
+    <string-array name="op1">
+        <item>How\'s my monitor?</item>
+        <item>How\'s my keyboard?</item>
+        <item>How\'s my microphone?</item>
+    </string-array>
+    <string-array name="op2">
+        <item>What\'s your employee number?</item>
+        <item>What\'s your employee name?</item>
+        <item>Is it the employee number?</item>
+    </string-array>
+    <string-array name="op3">
+        <item>What\'s your phone number?</item>
+        <item>How\'s your phone?</item>
+        <item>What\'s your phone?</item>
+    </string-array>
+    <string-array name="op4">
+        <item>Call you later</item>
+        <item>See you later.</item>
+        <item>How old is it?</item>
+    </string-array>
+    <string-array name="op5">
+        <item>Thank you.</item>
+        <item>You\'re welcome.</item>
+        <item>Nice to meet you too.</item>
+    </string-array>
+    <string-array name="op6">
+        <item>You\'re welcome.</item>
+        <item>See you later.</item>
+        <item>You\'re right.</item>
+    </string-array>
+</resources>
