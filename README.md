@@ -13,9 +13,11 @@ gaps marked by '{*}'.
 Besides the stand html text string, you also can use predefined combined symbols as a shortcut in 
 the raw string which will be consumed by the widget.
 
-*bold : \*\*bold\*\* or \_\_bold\_\_
-*highlight: \*\*\*highlighted\*\*\* or \_\_\_highlighted\_\_\_
-*italic: \*italic\* or \_italic\_
+bold : \*\*bold\*\* or \_\_bold\_\_
+
+highlight: \*\*\*highlighted\*\*\* or \_\_\_highlighted\_\_\_
+
+italic: \*italic\* or \_italic\_
  
 ### License
 ```
