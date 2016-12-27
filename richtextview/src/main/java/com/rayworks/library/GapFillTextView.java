@@ -59,8 +59,9 @@ import timber.log.Timber;
 
 /**
  * Created by seanzhou on 11/5/15.
- * <p/>
+ * <p>
  * The customized textview provides a way to select text from input window to fill up inner blanks.
+ * </p>
  */
 public class GapFillTextView extends TextView {
     public static final String DOUBLE_BRACE = "{}";
