@@ -1,5 +1,12 @@
 # RichTextView
-A sample to use library for android widget GapFillTextView.
+
+##Import to your project
+###Gradle
+```groovy
+dependencies {
+    compile 'com.rayworks.library:richtextview:1.0.1'
+}
+```
 
 ## Snapshots
 ![Editor box](./style-editor.png)
