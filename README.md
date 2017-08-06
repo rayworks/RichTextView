@@ -1,5 +1,5 @@
 # RichTextView
-
+The customized ```TextView``` provides a way to select text from input window to fill up inner blanks.
 ##Import to your project
 ###Gradle
 ```groovy
@@ -12,11 +12,11 @@ dependencies {
 ![Editor box](./style-editor.png)
 ![Popup list](./style-popup.png)
 
-##Instructions
-'GapFillTextView' can be treated as normal text view, besides that, it provides 2 ways to fill the 
+## Instructions
+```GapFillTextView``` can be treated as normal text view, besides that, it provides 2 ways to fill the 
 gaps marked by '{*}'.
 
-##Note
+## Note
 Besides the stand html text string, you also can use predefined combined symbols as a shortcut in 
 the raw string which will be consumed by the widget.
 
