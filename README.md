@@ -1,10 +1,10 @@
 # RichTextView
 The customized ```TextView``` provides a way to select text from input window to fill up inner blanks.
-##Import to your project
-###Gradle
+## Import to your project
+### Gradle
 ```groovy
 dependencies {
-    compile 'com.rayworks.library:richtextview:1.0.1'
+    compile 'com.rayworks.library:richtextview:1.0.2'
 }
 ```
 
