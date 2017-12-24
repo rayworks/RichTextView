@@ -11,6 +11,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.ListPopupWindow;
 import android.text.Editable;
 import android.text.Html;
@@ -27,7 +28,6 @@ import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
 import android.text.style.StyleSpan;
-import android.text.style.UnderlineSpan;
 import android.transition.Transition;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -54,6 +54,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import timber.log.Timber;
 
@@ -63,13 +64,13 @@ import timber.log.Timber;
  * The customized textview provides a way to select text from input window to fill up inner blanks.
  * </p>
  */
-public class GapFillTextView extends TextView {
+public class GapFillTextView extends AppCompatTextView {
     public static final String DOUBLE_BRACE = "{}";
     public static final String DELETION_SYMBOL = "-";
-    private static final String BLANK_TAG = "____";
     public static final int INTERVAL_IDLE = 1000 * 20;
     public static final String BLANK_CHAR = " ";
-
+    private static final String BLANK_TAG = "____";
+    private static String deletionString;
     private ListPopupWindow popupWindow;
     private String[] texts;
     /**
@@ -79,7 +80,6 @@ public class GapFillTextView extends TextView {
     private List<String[]> optionItems;
     //private ArrayAdapter<String> adapter;
     private OptionAdapter optionAdapter;
-
     /**
      * the line index corresponding to the specified vertical position
      **/
@@ -89,112 +89,33 @@ public class GapFillTextView extends TextView {
     private EditText editBox;
     private PopupWindow window;
     private Dialog alertDialog;
-
     private HashMap<Integer, String> filledTexts = new HashMap<>();
-
     private int popwndBkgColor = 0x0078FF;
     private int colorCorrectAnswer = Color.GREEN;
     private int colorWrongAnswer = Color.RED;
     private String rawStr;
     private ImageSpan imageSpan;
-
     /**
      * Word max limit for free form style
      */
     private int wordCountMaxLimitation = 128;
-
-    public void setWordCountMaxLimitation(int limitation) {
-        this.wordCountMaxLimitation = limitation;
-    }
-
     /***
      * whether it's the error-correction style of multiple selection
      */
     private boolean errorCorrectionEnabled;
     private Runnable interactionCheckerTask;
-
-    public boolean isErrorCorrectionEnabled() {
-        return errorCorrectionEnabled && inputStyle.equals(InputStyle.POPUP_WINDOW);
-    }
-
-    /***
-     * Input Data source style
-     */
-    public enum InputStyle {
-        /***
-         * PopupListWindow input style
-         */
-        POPUP_WINDOW,
-        /***
-         * EditorText input style
-         */
-        EDITOR_TEXT;
-
-        public static InputStyle fromType(int type) {
-            for (InputStyle style : values()) {
-                if (style.ordinal() == type) {
-                    return style;
-                }
-            }
-
-            // as a fallback
-            return POPUP_WINDOW;
-        }
-    }
-
     /***
      * Review mode. The textview is not touchable.
      */
     private boolean reviewMode;
-
-    public void setReviewMode(boolean reviewMode) {
-        this.reviewMode = reviewMode;
-    }
-
-    public boolean isReviewMode() {
-        return reviewMode;
-    }
-
     private InputStyle inputStyle = InputStyle.POPUP_WINDOW;
-
-    public void setInputStyle(InputStyle inputStyle) {
-        this.inputStyle = inputStyle;
-    }
-
     private AnswerCorrectionChecker answerCorrectionChecker;
-
-    public void setAnswerCorrectionChecker(AnswerCorrectionChecker answerCorrectionChecker) {
-        this.answerCorrectionChecker = answerCorrectionChecker;
-    }
-
     private AnswerResultObserver answerResultObserver;
-
-    public void setAnswerResultObserver(AnswerResultObserver answerResultObserver) {
-        this.answerResultObserver = answerResultObserver;
-    }
-
     private Handler handler;
     private long lastInteractionTime;
-
     private String editorHint;
-
-    public void setEditorHint(String editorHint) {
-        this.editorHint = editorHint;
-    }
-
     private String editorWarningMsg;
-
-    public void setEditorWarningMsg(String editorWarningMsg) {
-        this.editorWarningMsg = editorWarningMsg;
-    }
-
     private String editorConfirmText = "OK";
-
-    public void setEditorConfirmText(String editorConfirmText) {
-        this.editorConfirmText = editorConfirmText;
-    }
-
-    private static String deletionString;
 
     public GapFillTextView(Context context) {
         this(context, null);
@@ -220,6 +141,52 @@ public class GapFillTextView extends TextView {
         }
 
         init();
+    }
+
+    public static void setDeletionString(String deletion) {
+        if (!TextUtils.isEmpty(deletion)) {
+            OptionAdapter.setDeletionMsg(deletion);
+        }
+    }
+
+    public void setWordCountMaxLimitation(int limitation) {
+        this.wordCountMaxLimitation = limitation;
+    }
+
+    public boolean isErrorCorrectionEnabled() {
+        return errorCorrectionEnabled && inputStyle.equals(InputStyle.POPUP_WINDOW);
+    }
+
+    public boolean isReviewMode() {
+        return reviewMode;
+    }
+
+    public void setReviewMode(boolean reviewMode) {
+        this.reviewMode = reviewMode;
+    }
+
+    public void setInputStyle(InputStyle inputStyle) {
+        this.inputStyle = inputStyle;
+    }
+
+    public void setAnswerCorrectionChecker(AnswerCorrectionChecker answerCorrectionChecker) {
+        this.answerCorrectionChecker = answerCorrectionChecker;
+    }
+
+    public void setAnswerResultObserver(AnswerResultObserver answerResultObserver) {
+        this.answerResultObserver = answerResultObserver;
+    }
+
+    public void setEditorHint(String editorHint) {
+        this.editorHint = editorHint;
+    }
+
+    public void setEditorWarningMsg(String editorWarningMsg) {
+        this.editorWarningMsg = editorWarningMsg;
+    }
+
+    public void setEditorConfirmText(String editorConfirmText) {
+        this.editorConfirmText = editorConfirmText;
     }
 
     private void init() {
@@ -320,12 +287,6 @@ public class GapFillTextView extends TextView {
         this.rawStr = text;
     }
 
-    public static void setDeletionString(String deletion) {
-        if (!TextUtils.isEmpty(deletion)) {
-            OptionAdapter.setDeletionMsg(deletion);
-        }
-    }
-
     /***
      * Gets the formatted and all blanks filled text.
      *
@@ -383,7 +344,6 @@ public class GapFillTextView extends TextView {
      * @param source      new source string for clicked span. It's valid when {@code hitDetected} is true.
      */
     private void setFormattedText(boolean hitDetected, String source) {
-        // "**My hometown**\n\nBy Kelly Scott\n \nMy {} is Edinburgh, in Scotland. It's a really {beautiful} city. It's {} the east coast of the country, on the North Sea. It's not {} the mountains, but there are mountains nearby. It's around 400 {} from London to Edinburgh. By car, that's {} seven hours. Come in the summer; in winter, it's really cold!";
         String formattedStr = Utils.getHtmlTextWithMarkups(this.rawStr);
 
         SpannableStringBuilder stringBuilder = setupSpansForMultipleSelection(hitDetected, source, formattedStr);
@@ -425,7 +385,8 @@ public class GapFillTextView extends TextView {
     }
 
     @NonNull
-    private SpannableStringBuilder setupSpansForMultipleSelection(boolean hitDetected, String source, String formattedStr) {
+    private SpannableStringBuilder setupSpansForMultipleSelection(boolean hitDetected, String source,
+                                                                  String formattedStr) {
         String regex = "\\{(.*?)\\}"; // filter by all the {}, {texts} style strings
         texts = formattedStr.split(regex);
 
@@ -433,8 +394,10 @@ public class GapFillTextView extends TextView {
         if (texts.length - 1 > optionItems.size() && optionItems.size() > 0) {
 
             // more blanks to be filled than answer option items ?
-            throw new IllegalArgumentException(String.format("%d blanks to be filled but %d answer option items found.",
-                    texts.length - 1, optionItems.size()));
+            throw new IllegalArgumentException(
+                    String.format(Locale.ENGLISH,
+                            "%d blanks to be filled but %d answer option items found.",
+                            texts.length - 1, optionItems.size()));
         }
 
         SpannableStringBuilder stringBuilder = new SpannableStringBuilder();
@@ -529,14 +492,13 @@ public class GapFillTextView extends TextView {
      * @param spanFirstSelection   whether it's the first time to select the answer
      * @param hitIndex             whether current span is clicked
      */
-    private void addClickableSpanArea(SpannableStringBuilder stringBuilder, String placeholder, int indexOfClickableSpan, boolean spanFirstSelection, boolean hitIndex) {
+    private void addClickableSpanArea(SpannableStringBuilder stringBuilder, String placeholder,
+                                      int indexOfClickableSpan, boolean spanFirstSelection, boolean hitIndex) {
         boolean deleteSelected = placeholder.equals(DELETION_SYMBOL);
 
         SpannableString spanUnderString;
         if (!deleteSelected) {
             spanUnderString = new SpannableString(placeholder);
-            UnderlineSpan spanUnder = new UnderlineSpan();
-            spanUnderString.setSpan(spanUnder, 0, placeholder.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         } else {
             spanUnderString = new SpannableString(" ");
 
@@ -560,7 +522,8 @@ public class GapFillTextView extends TextView {
                 // check answer for all the filled texts
                 boolean correctAnswer = false;
                 if (answerCorrectionChecker != null) {
-                    correctAnswer = answerCorrectionChecker.isAnswerCorrect(indexOfClickableSpan, filledTexts.get(indexOfClickableSpan));
+                    correctAnswer = answerCorrectionChecker.isAnswerCorrect(indexOfClickableSpan,
+                            filledTexts.get(indexOfClickableSpan));
                 }
                 if (answerResultObserver != null && correctAnswer && spanFirstSelection) {
                     answerResultObserver.onAnswerCorrectForFirstTime(indexOfClickableSpan);
@@ -881,6 +844,31 @@ public class GapFillTextView extends TextView {
         return targetLineIndex;
     }
 
+    /***
+     * Input Data source style
+     */
+    public enum InputStyle {
+        /***
+         * PopupListWindow input style
+         */
+        POPUP_WINDOW,
+        /***
+         * EditorText input style
+         */
+        EDITOR_TEXT;
+
+        public static InputStyle fromType(int type) {
+            for (InputStyle style : values()) {
+                if (style.ordinal() == type) {
+                    return style;
+                }
+            }
+
+            // as a fallback
+            return POPUP_WINDOW;
+        }
+    }
+
     public class TagClickableSpan extends ClickableSpan {
 
         private final int index;
@@ -899,9 +887,11 @@ public class GapFillTextView extends TextView {
 
         @Override
         public void updateDrawState(TextPaint ds) {
-            //super.updateDrawState(ds);
-            ds.setColor(ds.linkColor);
+            // get rid of the underline
             ds.setUnderlineText(false);
+
+            // align the color of original text
+            ds.setColor(GapFillTextView.this.getTextColors().getDefaultColor());
         }
     }
 

@@ -17,7 +17,6 @@
         android:text="Hello World!" />
 
     <com.rayworks.library.GapFillTextView
-        android:padding="8dp"
         android:id="@+id/richText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -25,13 +24,14 @@
         android:layout_marginTop="16dp"
         android:fontFamily="sans-serif"
         android:lineSpacingExtra="2dp"
+        android:padding="8dp"
+        android:textColor="@android:color/black"
         android:textStyle="normal"
         android:typeface="sans"
         app:gapFillInputStyle="EditorText"
         app:wrong_color="@color/gapfill_wrong" />
 
     <com.rayworks.library.GapFillTextView
-        android:padding="8dp"
         android:id="@+id/multiselector"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -39,6 +39,8 @@
         android:layout_marginTop="16dp"
         android:fontFamily="sans-serif"
         android:lineSpacingExtra="2dp"
+        android:padding="8dp"
+        android:textColor="@android:color/black"
         android:typeface="sans"
         app:gapFillInputStyle="PopupWindow" />
 </RelativeLayout>
