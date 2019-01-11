@@ -16,6 +16,7 @@
         <item>What\'s your phone?</item>
     </string-array>
     <string-array name="op4">
+        <item>""</item>
         <item>Call you later</item>
         <item>See you later.</item>
         <item>How old is it?</item>

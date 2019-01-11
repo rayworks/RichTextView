@@ -20,10 +20,8 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.TextPaint;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.ImageSpan;
@@ -44,6 +42,12 @@ import android.widget.TextView;
 import com.rayworks.library.adapter.OptionAdapter;
 import com.rayworks.library.listener.AnswerCorrectionChecker;
 import com.rayworks.library.listener.AnswerResultObserver;
+import com.rayworks.library.listener.ClickableSpanListener;
+import com.rayworks.library.listener.TextClickListener;
+import com.rayworks.library.text.ErrorCorrectionSpan;
+import com.rayworks.library.text.InputStyle;
+import com.rayworks.library.text.LinkTouchMovementMethod;
+import com.rayworks.library.text.TagClickableSpan;
 import com.rayworks.library.util.Utils;
 
 import java.lang.reflect.Field;
@@ -64,7 +68,7 @@ import timber.log.Timber;
  * The customized textview provides a way to select text from input window to fill up inner blanks.
  * </p>
  */
-public class GapFillTextView extends AppCompatTextView {
+public class GapFillTextView extends AppCompatTextView implements ClickableSpanListener {
     public static final String DOUBLE_BRACE = "{}";
     public static final String DELETION_SYMBOL = "-";
     public static final int INTERVAL_IDLE = 1000 * 20;
@@ -191,7 +195,16 @@ public class GapFillTextView extends AppCompatTextView {
 
     private void init() {
         setBackgroundResource(R.drawable.writing_text_frame_bkg);
-        setMovementMethod(new LinkTouchMovementMethod());
+        setMovementMethod(new LinkTouchMovementMethod().setTextClickListener(
+                new TextClickListener() {
+                    @Override
+                    public void onTextClicked(int lineVerticalIndex, String clickedString, int offsetX) {
+                        lineIndexHit = lineVerticalIndex;
+                        clickedSpanString = clickedString;
+                        offsetXClickedSpan = offsetX;
+                    }
+                }
+        ));
 
         handler = new Handler();
         interactionCheckerTask = new Runnable() {
@@ -483,6 +496,14 @@ public class GapFillTextView extends AppCompatTextView {
         return stringBuilder;
     }
 
+    @Override
+    public void onClick(int index) {
+        clickedSpanIndex = index;
+
+        if (!isReviewMode())
+            showInputSourceView();
+    }
+
     /***
      * Appends the clickable span with formatted text
      *
@@ -509,11 +530,14 @@ public class GapFillTextView extends AppCompatTextView {
         }
 
         TagClickableSpan urlSpan;
+        int textColor = getTextColors().getDefaultColor();
         if (errorCorrectionEnabled) {
-            urlSpan = new ErrorCorrectionSpan(indexOfClickableSpan, reviewMode);
+            urlSpan = new ErrorCorrectionSpan(indexOfClickableSpan, textColor, reviewMode);
         } else {
-            urlSpan = new TagClickableSpan(indexOfClickableSpan);
+            urlSpan = new TagClickableSpan(indexOfClickableSpan, textColor);
         }
+        urlSpan.setClickListener(this);
+
         spanUnderString.setSpan(urlSpan, 0, placeholder.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
         if (hitIndex) {
@@ -842,125 +866,6 @@ public class GapFillTextView extends AppCompatTextView {
             }
         }
         return targetLineIndex;
-    }
-
-    /***
-     * Input Data source style
-     */
-    public enum InputStyle {
-        /***
-         * PopupListWindow input style
-         */
-        POPUP_WINDOW,
-        /***
-         * EditorText input style
-         */
-        EDITOR_TEXT;
-
-        public static InputStyle fromType(int type) {
-            for (InputStyle style : values()) {
-                if (style.ordinal() == type) {
-                    return style;
-                }
-            }
-
-            // as a fallback
-            return POPUP_WINDOW;
-        }
-    }
-
-    public class TagClickableSpan extends ClickableSpan {
-
-        private final int index;
-
-        public TagClickableSpan(int index) {
-            this.index = index;
-        }
-
-        @Override
-        public void onClick(View widget) {
-            clickedSpanIndex = index;
-
-            if (!isReviewMode())
-                showInputSourceView();
-        }
-
-        @Override
-        public void updateDrawState(TextPaint ds) {
-            // get rid of the underline
-            ds.setUnderlineText(false);
-
-            // align the color of original text
-            ds.setColor(GapFillTextView.this.getTextColors().getDefaultColor());
-        }
-    }
-
-    public class ErrorCorrectionSpan extends TagClickableSpan {
-        private boolean reviewMode;
-
-        public ErrorCorrectionSpan(int index, boolean reviewMode) {
-            super(index);
-            this.reviewMode = reviewMode;
-        }
-
-        @Override
-        public void updateDrawState(TextPaint ds) {
-            // keep the paint's color and remove the underline if not in the review mode.
-            ds.setUnderlineText(reviewMode);
-        }
-    }
-
-    // http://stackoverflow.com/questions/20856105/change-the-text-color-of-a-single-clickablespan-when-pressed-without-affecting-o#
-    class LinkTouchMovementMethod extends LinkMovementMethod {
-
-        @Override
-        public boolean onTouchEvent(TextView widget, Spannable buffer, MotionEvent event) {
-            int action = event.getAction();
-            if (action == MotionEvent.ACTION_UP) {
-                int x = (int) event.getX();
-                int y = (int) event.getY();
-
-                x -= widget.getTotalPaddingLeft();
-                y -= widget.getTotalPaddingTop();
-
-                x += widget.getScrollX();
-                y += widget.getScrollY();
-
-                Layout layout = widget.getLayout();
-                lineIndexHit = layout.getLineForVertical(y);
-                int off = layout.getOffsetForHorizontal(lineIndexHit, x);
-
-                TagClickableSpan clickedSpan = null;
-                TagClickableSpan[] spans = buffer.getSpans(off, off, TagClickableSpan.class);
-
-                int xLineStart = layout.getLineStart(lineIndexHit);
-                Timber.d(">>> text index Line : " + xLineStart);
-
-                if (spans.length > 0) {
-                    clickedSpan = spans[0];
-                    int spanTxtIndex = buffer.getSpanStart(clickedSpan);
-                    Timber.d(">>> text index Span : " + spanTxtIndex);
-
-                    // measure the text from the start of current line to the span start pos
-                    String fullText = widget.getText().toString();
-
-                    String linePreTxt = "";
-                    int spanEndIndex = buffer.getSpanEnd(clickedSpan);
-                    if (xLineStart > spanTxtIndex) {
-                        // already filled in with a long text ?!
-                        linePreTxt = fullText.substring(spanTxtIndex, spanEndIndex);
-                    } else {
-                        linePreTxt = fullText.substring(xLineStart, spanTxtIndex);
-                    }
-                    clickedSpanString = fullText.substring(spanTxtIndex, spanEndIndex);
-
-                    offsetXClickedSpan = (int) widget.getPaint().measureText(linePreTxt) + widget.getPaddingLeft();
-                }
-
-                Timber.d(">>> Line location LineNo: " + lineIndexHit + " offset Hor: " + off);
-            }
-            return super.onTouchEvent(widget, buffer, event);
-        }
     }
 
 }

@@ -10,12 +10,16 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import timber.log.Timber;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        Timber.plant(new Timber.DebugTree());
 
         GapFillTextView textView = (GapFillTextView) findViewById(R.id.richText);
         String raw = "**My hometown**\n\nBy Kelly Scott\n \nMy {} is Edinburgh, in Scotland. " +
