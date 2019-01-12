@@ -59,6 +59,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import timber.log.Timber;
 
@@ -403,6 +405,10 @@ public class GapFillTextView extends AppCompatTextView implements ClickableSpanL
         String regex = "\\{(.*?)\\}"; // filter by all the {}, {texts} style strings
         texts = formattedStr.split(regex);
 
+        if (texts.length <= 1) {
+            throw new IllegalArgumentException("Target String has illegal format.");
+        }
+
         // We only support Multiple-Selection style && Free form style
         if (texts.length - 1 > optionItems.size() && optionItems.size() > 0) {
 
@@ -415,25 +421,33 @@ public class GapFillTextView extends AppCompatTextView implements ClickableSpanL
 
         SpannableStringBuilder stringBuilder = new SpannableStringBuilder();
 
-        int lastMatchedTextPosition = 0;
+        LinkedList<String> spanTexts = new LinkedList<>();
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(formattedStr);
+        int matchCnt = 0;
+        while (matcher.find()) {
+            ++matchCnt;
+            spanTexts.add(matcher.group());
+        }
 
-        for (int i = 0; i < texts.length; i++) {
+        stringBuilder.append(Html.fromHtml(texts[0]));
 
+        // matchCnt + 1 == texts.length
+        for (int i = 0; i < matchCnt; i++) {
             boolean spanFirstSelection = false;
             boolean hitIndex = false;
 
             String placeholder = "";
 
             // the hit area detection
-            // we start counting clickable span from the position 1 of filtered text.
-            int spanIndex = i - 1;
-            if (hitDetected && i > 0) {
+            int spanIndex = i;
+            if (hitDetected) {
                 if (spanIndex == clickedSpanIndex) {
                     spanFirstSelection = !filledTexts.containsKey(spanIndex);
                     hitIndex = true;
 
                     String selectedSource = source;
-                    if (TextUtils.isEmpty(source) /*source.contains("delete") || source.contains("Delete")*/) {
+                    if (TextUtils.isEmpty(source)) {
                         selectedSource = DELETION_SYMBOL;
                     }
                     placeholder = selectedSource;
@@ -442,55 +456,29 @@ public class GapFillTextView extends AppCompatTextView implements ClickableSpanL
                 } else if (filledTexts.containsKey(spanIndex)) {
                     hitIndex = true;
                     placeholder = filledTexts.get(spanIndex); // concat the historic texts
-                } else {
-                    placeholder = "";
                 }
             }
 
-            String str = texts[i];
+            String str = texts[i + 1]; // TXT | { ... } TXT { ... } TXT { ... } TXT
+            // check the initial values
+            if (TextUtils.isEmpty(placeholder)) {
+                String spanTxt = spanTexts.get(i);
+                placeholder = spanTxt.substring(1, spanTxt.length() - 1); // {placeholder}
 
-            // add the separator underline span
-            if (i > 0 && i <= texts.length - 1) {
-
-                // check the initial values
                 if (TextUtils.isEmpty(placeholder)) {
-                    // find the start index after the end index of previous text to avoid locating
-                    // the wrong position.
-                    int preTextStartPos = formattedStr.indexOf(texts[i - 1], lastMatchedTextPosition);
-
-                    lastMatchedTextPosition = preTextStartPos + texts[i - 1].length();
-
-                    // move forward to the most closest position to the new segment if any
-                    lastMatchedTextPosition = formattedStr.indexOf("}", lastMatchedTextPosition) + 1;
-
-                    // find the end index after the start position
-                    int currentTextStartPos = formattedStr.indexOf(texts[i], lastMatchedTextPosition);
-
-                    placeholder = formattedStr.substring(preTextStartPos + texts[i - 1].length() + 1, currentTextStartPos - 1);
-
-                    if (TextUtils.isEmpty(placeholder)) {
-                        // only the "{}" found, replaced with the underline
-                        placeholder = BLANK_TAG;
-                        errorCorrectionEnabled = false;
-                    } else {
-                        errorCorrectionEnabled = true;
-
-                        // apply the html format for input content
-                        placeholder = Html.fromHtml(placeholder).toString();
-                    }
+                    // only the "{}" found, replaced with the underline
+                    placeholder = BLANK_TAG;
+                    errorCorrectionEnabled = false;
                 } else {
-                    // cached text detected, move forward the index of matched text.
-                    lastMatchedTextPosition += texts[i - 1].length();
-                    // one step ahead of the filled blank
-                    lastMatchedTextPosition = formattedStr.indexOf("}", lastMatchedTextPosition) + 1;
+                    errorCorrectionEnabled = true;
+
+                    // apply the html format for input content
+                    placeholder = Html.fromHtml(placeholder).toString();
                 }
-
-                addClickableSpanArea(stringBuilder, placeholder, spanIndex, spanFirstSelection, hitIndex);
-
-                stringBuilder.append(Html.fromHtml(str));
-            } else {
-                stringBuilder.append(Html.fromHtml(str));
             }
+
+            addClickableSpanArea(stringBuilder, placeholder, spanIndex, spanFirstSelection, hitIndex);
+            stringBuilder.append(Html.fromHtml(str));
         }
 
         return stringBuilder;
