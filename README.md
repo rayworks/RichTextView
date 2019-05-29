@@ -1,4 +1,4 @@
-# RichTextView
+# RichTextView [ ![Download](https://api.bintray.com/packages/crayzhou/maven/RichTextView/images/download.svg?version=1.0.2) ](https://bintray.com/crayzhou/maven/RichTextView/1.0.2/link)
 The customized ```TextView``` provides a way to select text from input window to fill up inner blanks.
 ## Import to your project
 ### Gradle

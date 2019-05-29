@@ -22,11 +22,11 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    testImplementation 'junit:junit:4.12'
+    implementation "com.android.support:appcompat-v7:$rootProject.supportLibraryVersion"
 
-    compile 'com.jakewharton.timber:timber:3.1.0'
+    implementation 'com.jakewharton.timber:timber:4.1.2'
 }
 
 def siteUrl = 'https://github.com/rayworks/RichTextView'
