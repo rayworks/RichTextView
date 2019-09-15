@@ -1,4 +1,5 @@
-# RichTextView [ ![Download](https://api.bintray.com/packages/crayzhou/maven/RichTextView/images/download.svg?version=1.0.2) ](https://bintray.com/crayzhou/maven/RichTextView/1.0.2/link)
+# RichTextView [ ![Download](https://api.bintray.com/packages/crayzhou/maven/RichTextView/images/download.svg?version=1.0.2) ](https://bintray.com/crayzhou/maven/RichTextView/1.0.2/link) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/7bc46578852c4053b4472994d272f1e4)](https://www.codacy.com/manual/cray_bond/RichTextView?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=rayworks/RichTextView&amp;utm_campaign=Badge_Grade)
+
 The customized ```TextView``` provides a way to select text from input window to fill up inner blanks.
 ## Import to your project
 ### Gradle
