@@ -1,7 +1,7 @@
 package com.rayworks.richtextview.ui;
 
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.rayworks.library.GapFillTextView;
 import com.rayworks.richtextview.R;
@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
 
         Timber.plant(new Timber.DebugTree());
 
-        GapFillTextView textView = (GapFillTextView) findViewById(R.id.richText);
+        GapFillTextView textView = findViewById(R.id.richText);
         String raw = "**My hometown**\n\nBy Kelly Scott\n \nMy {} is Edinburgh, in Scotland. " +
                 "It's a really {} city. It's {} the east coast of the country, on the North" +
                 " Sea. It's not {} the mountains, but there are mountains nearby. It's around 400 {}" +
@@ -29,10 +29,10 @@ public class MainActivity extends AppCompatActivity {
                 "winter, it's really cold!";
 
         //textView.setInputStyle(GapFillTextView.InputStyle.EDITOR_TEXT);
-        textView.setDataSource(Collections.EMPTY_LIST, raw);
+        textView.setDataSource(Collections.<String[]>emptyList(), raw);
 
 
-        GapFillTextView selector = (GapFillTextView) findViewById(R.id.multiselector);
+        GapFillTextView selector = findViewById(R.id.multiselector);
         String talkMaterial = "Jenny: Hey, this is my desk.\nJohn: Hi, I'm John from IT. Are you " +
                 "Jenny?\nJenny: Oh! I'm sorry. Yes, I'm Jenny. {How's my mouse?}\nJohn: You need a " +
                 "new monitor. {What's your first name?}\nJenny: It's M87.\nJohn: {How's your phone " +
