@@ -9,4 +9,12 @@
         <item name="android:windowEnterAnimation">@anim/scale_rev_in</item>
         <item name="android:windowExitAnimation">@anim/scale_rev_out</item>
     </style>
+
+    <style name="PopupDropDown">
+        <item name="android:windowEnterAnimation">@anim/rt_anim_top_down</item>
+    </style>
+
+    <style name="PopupBottomUp">
+        <item name="android:windowEnterAnimation">@anim/scale_rev_in</item>
+    </style>
 </resources>

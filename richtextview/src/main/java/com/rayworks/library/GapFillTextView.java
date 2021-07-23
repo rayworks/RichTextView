@@ -10,6 +10,7 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
 import androidx.annotation.NonNull;
+import androidx.annotation.StyleRes;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.appcompat.widget.ListPopupWindow;
@@ -122,6 +123,20 @@ public class GapFillTextView extends AppCompatTextView implements ClickableSpanL
     private String editorHint;
     private String editorWarningMsg;
     private String editorConfirmText = "OK";
+
+    private int dropDownAnimStyle = -1;
+    private int bottomUpAnimStyle = -1;
+
+    /**
+     * Set the animation styles to use when the popup window is shown or dismissed.
+     *
+     * @param dropDownAnimationStyle Animation style to use for dropdown case.
+     * @param bottomUpAnimationStyle Animation style to use for bottom-up case.
+     */
+    void setPopupWindowAnimationStyles(@StyleRes int dropDownAnimationStyle, @StyleRes int bottomUpAnimationStyle) {
+        dropDownAnimStyle = dropDownAnimationStyle;
+        bottomUpAnimStyle = bottomUpAnimationStyle;
+    }
 
     public GapFillTextView(Context context) {
         this(context, null);
@@ -774,7 +789,10 @@ public class GapFillTextView extends AppCompatTextView implements ClickableSpanL
          * we show the ListPopupWindow by the UP direction
          */
         if (Math.abs(verticalOffset) < popupWindow.getHeight()) {
-            popupWindow.setAnimationStyle(R.style.PopupOptionReverse);
+            if (bottomUpAnimStyle != -1)
+                popupWindow.setAnimationStyle(bottomUpAnimStyle);
+            else
+                popupWindow.setAnimationStyle(R.style.PopupBottomUp);
 
             verticalOffset -= (singleLineHeight + popupWindow.getHeight());
             Timber.d(">>> verticalOffset post: " + verticalOffset + " | popwnd height: " + popupWindow.getHeight());
@@ -784,7 +802,10 @@ public class GapFillTextView extends AppCompatTextView implements ClickableSpanL
                 verticalOffset -= Math.max(getLineSpacingExtra() - 2, 0);
             }
 
-            popupWindow.setAnimationStyle(R.style.PopupOption);
+            if (dropDownAnimStyle != -1)
+                popupWindow.setAnimationStyle(dropDownAnimStyle);
+            else
+                popupWindow.setAnimationStyle(R.style.PopupDropDown);
         }
 
         popupWindow.setAnchorView(this);
