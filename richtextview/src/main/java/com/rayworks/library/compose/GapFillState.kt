@@ -55,20 +55,25 @@ class GapFillState {
         if (normalised.endsWith("}")) normalised += " "
         if (normalised.startsWith("{")) normalised = " $normalised"
 
-        val parts = normalised.split("{}")
-        val blankCount = parts.size - 1
+        // Use a regex to match both {} and {placeholder} blank markers so that the
+        // method works regardless of whether blanks had default placeholders.
+        val blankRegex = Regex("\\{.*?\\}")
+        val matches = blankRegex.findAll(normalised).toList()
+        val blankCount = matches.size
         check(filledAnswers.size == blankCount) {
             "Not all blanks have been filled: expected $blankCount, got ${filledAnswers.size}"
         }
 
         return buildString {
-            append(parts[0])
-            for (i in 0 until blankCount) {
+            var lastEnd = 0
+            matches.forEachIndexed { i, match ->
+                append(normalised.substring(lastEnd, match.range.first))
                 append('{')
                 append(filledAnswers[i])
                 append('}')
-                append(parts[i + 1])
+                lastEnd = match.range.last + 1
             }
+            append(normalised.substring(lastEnd))
         }
     }
 }

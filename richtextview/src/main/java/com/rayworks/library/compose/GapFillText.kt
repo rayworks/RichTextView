@@ -162,7 +162,8 @@ fun GapFillText(
         val answers = orderedAnswers(state.filledAnswers, parsed.totalBlanks)
 
         if (config.inputStyle == InputStyle.POPUP_WINDOW && currentChecker != null) {
-            val correct = currentChecker!!.isAnswerCorrect(blankIndex, answer)
+            val checker = currentChecker
+            val correct = checker.isAnswerCorrect(blankIndex, answer)
             if (correct && wasFirstSelection) {
                 currentObserver?.onAnswerCorrectForFirstTime(blankIndex)
             }
@@ -176,7 +177,8 @@ fun GapFillText(
         )
 
         if (state.filledAnswers.size == parsed.totalBlanks && currentChecker != null) {
-            val allCorrect = currentChecker!!.allAnswerCorrect(answers)
+            val checker = currentChecker
+            val allCorrect = checker.allAnswerCorrect(answers)
             currentObserver?.onHandleAllAnswerCorrect(allCorrect)
         }
     }
