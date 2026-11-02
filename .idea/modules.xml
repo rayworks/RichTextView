@@ -2,16 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/AndroidStudioProjects.RichTextView.iml" filepath="$PROJECT_DIR$/.idea/modules/AndroidStudioProjects.RichTextView.iml" />
       <module fileurl="file://$PROJECT_DIR$/RichTextView.iml" filepath="$PROJECT_DIR$/RichTextView.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/RichTextView.app.iml" filepath="$PROJECT_DIR$/.idea/modules/app/RichTextView.app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/RichTextView.app.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/RichTextView.app.androidTest.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/RichTextView.app.main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/RichTextView.app.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/RichTextView.app.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/app/RichTextView.app.unitTest.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/richtextview/RichTextView.richtextview.iml" filepath="$PROJECT_DIR$/.idea/modules/richtextview/RichTextView.richtextview.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/richtextview/RichTextView.richtextview.androidTest.iml" filepath="$PROJECT_DIR$/.idea/modules/richtextview/RichTextView.richtextview.androidTest.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/richtextview/RichTextView.richtextview.main.iml" filepath="$PROJECT_DIR$/.idea/modules/richtextview/RichTextView.richtextview.main.iml" />
-      <module fileurl="file://$PROJECT_DIR$/.idea/modules/richtextview/RichTextView.richtextview.unitTest.iml" filepath="$PROJECT_DIR$/.idea/modules/richtextview/RichTextView.richtextview.unitTest.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/richtextview/richtextview.iml" filepath="$PROJECT_DIR$/richtextview/richtextview.iml" />
     </modules>

@@ -11,9 +11,5 @@
       <entry name="!?*.kt" />
       <entry name="!?*.clj" />
     </wildcardResourcePatterns>
-    <bytecodeTargetLevel>
-      <module name="RichTextView.app" target="17" />
-      <module name="RichTextView.richtextview" target="17" />
-    </bytecodeTargetLevel>
   </component>
 </project>
