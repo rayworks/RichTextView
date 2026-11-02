@@ -26,6 +26,28 @@ dependencies {
 
 `GapFillTextView` can be treated as normal text view, besides that, it provides 2 ways to fill the gaps marked by '{*}'.
 
+### Jetpack Compose
+
+The library also ships a Compose reimplementation, `GapFillText`, with the same input styles,
+answer colouring, deletion option, review mode and `AnswerCorrectionChecker` / `AnswerResultObserver` callbacks.
+
+```kotlin
+val state = rememberGapFillState()
+
+GapFillText(
+    config = GapFillConfig(
+        rawText = "My {} is Edinburgh. It's a really {} city.",
+        optionItems = listOf(listOf("home", "hometown"), listOf("nice", "", "big")), // "" = delete option
+        inputStyle = InputStyle.POPUP_WINDOW, // or InputStyle.EDITOR_TEXT
+    ),
+    state = state,                 // state.filledAnswers, state.reset(), state.formattedFullText(raw)
+    answerChecker = checker,       // optional
+    resultObserver = observer,     // optional
+)
+```
+
+See `ComposeSampleActivity` in the sample app (opened from the "Open Compose version" button).
+
 ## Note
 
 Besides the stand html text string, you also can use predefined combined symbols as a shortcut in the raw string which will be consumed by the widget.

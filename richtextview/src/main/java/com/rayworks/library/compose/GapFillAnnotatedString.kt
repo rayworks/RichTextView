@@ -6,6 +6,7 @@ import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -17,7 +18,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.em
 import androidx.core.text.HtmlCompat
 import com.rayworks.library.R
 import com.rayworks.library.listener.AnswerCorrectionChecker
@@ -44,7 +45,7 @@ private const val DELETION_KEY_PREFIX = "blank_del_"
  * - Appends an inline-content placeholder (key `"blank_del_$index"`) when the answer is
  *   the deletion symbol — the matching [InlineTextContent] entry is built by [buildInlineContent].
  * - Renders the answered text in [GapFillConfig.correctColor] or [GapFillConfig.wrongColor]
- *   (POPUP_WINDOW mode) or [Color.Black] (EDITOR_TEXT mode) when the blank is answered.
+ *   (POPUP_WINDOW mode) or the default text colour (EDITOR_TEXT mode) when the blank is answered.
  * - Renders [Segment.BlankSegment.defaultPlaceholder] with optional underline decoration
  *   when the blank has not yet been answered.
  * - Appends a trailing space after each blank span (mirrors the original
@@ -106,7 +107,7 @@ fun buildGapFillAnnotatedString(
                                 else
                                     config.wrongColor
                             } else {
-                                Color.Black
+                                defaultTextColor
                             }
                             pushStringAnnotation(BLANK_ANNOTATION_TAG, segment.index.toString())
                             pushStyle(SpanStyle(color = color, fontWeight = FontWeight.Bold))
@@ -158,8 +159,8 @@ fun buildInlineContent(
     return deletionBlanks.associate { segment ->
         "$DELETION_KEY_PREFIX${segment.index}" to InlineTextContent(
             placeholder = Placeholder(
-                width = 20.sp,
-                height = 20.sp,
+                width = 1.2.em,
+                height = 1.2.em,
                 placeholderVerticalAlign = PlaceholderVerticalAlign.TextCenter,
             ),
         ) {
