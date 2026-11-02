@@ -90,14 +90,15 @@ private class AnswerKeyChecker(private val key: List<String>) : AnswerCorrection
     override fun isAnswerCorrect(questionIndex: Int, answer: String?): Boolean =
         key.getOrNull(questionIndex) == normalize(answer)
 
-    override fun allAnswerCorrect(resultList: List<String>): Boolean =
+    override fun allAnswerCorrect(resultList: List<String?>): Boolean =
         retrieveCorrectAnswers(resultList) == key.size
 
-    override fun retrieveCorrectAnswers(resultList: List<String>): Int =
+    override fun retrieveCorrectAnswers(resultList: List<String?>): Int =
         resultList.withIndex().count { (i, a) -> isAnswerCorrect(i, a) }
 
-    // The component reports the deletion option as "-" per blank and "" in result lists.
-    private fun normalize(answer: String?) = if (answer == "-") "" else answer.orEmpty()
+    // The component reports the deletion option as "-" per blank and "" in result lists;
+    // unanswered blanks are null and never match.
+    private fun normalize(answer: String?) = if (answer == "-") "" else answer
 }
 
 @Composable

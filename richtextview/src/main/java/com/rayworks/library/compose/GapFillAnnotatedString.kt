@@ -172,13 +172,13 @@ fun buildInlineContent(
 /**
  * Returns an ordered list of answers for indices 0 until [totalBlanks].
  *
- * The deletion symbol is translated to an empty string, matching the original
- * `getAllAnswers()` behaviour.
+ * Matches the original `getAllAnswers()` behaviour: the deletion symbol is translated to an
+ * empty string and an unanswered blank is `null`, so the two stay distinguishable for
+ * [AnswerCorrectionChecker] implementations.
  */
-fun orderedAnswers(filledAnswers: Map<Int, String>, totalBlanks: Int): List<String> =
+fun orderedAnswers(filledAnswers: Map<Int, String>, totalBlanks: Int): List<String?> =
     (0 until totalBlanks).map { i ->
-        val answer = filledAnswers[i]
-        if (answer == DELETION_SYMBOL) "" else answer ?: ""
+        filledAnswers[i]?.let { if (it == DELETION_SYMBOL) "" else it }
     }
 
 // ── Spanned → AnnotatedString ─────────────────────────────────────────────────
