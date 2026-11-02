@@ -3,7 +3,9 @@ package com.rayworks.library.compose
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 
 /**
@@ -76,8 +78,39 @@ class GapFillState {
             append(normalised.substring(lastEnd))
         }
     }
+
+    companion object {
+        /**
+         * [Saver] that keeps the filled answers and the open input overlay across
+         * configuration changes and process death (used by [rememberGapFillState]).
+         */
+        val Saver: Saver<GapFillState, Any> = listSaver(
+            save = { state ->
+                listOf(
+                    ArrayList(state.filledAnswers.keys),
+                    ArrayList(state.filledAnswers.values),
+                    state.activeBlankIndex ?: NO_ACTIVE_BLANK,
+                )
+            },
+            restore = { saved ->
+                @Suppress("UNCHECKED_CAST")
+                GapFillState().apply {
+                    val keys = saved[0] as List<Int>
+                    val values = saved[1] as List<String>
+                    filledAnswers = keys.zip(values).toMap()
+                    activeBlankIndex = (saved[2] as Int).takeIf { it != NO_ACTIVE_BLANK }
+                }
+            },
+        )
+
+        private const val NO_ACTIVE_BLANK = -1
+    }
 }
 
-/** Creates and [remember]s a [GapFillState] instance that survives recompositions. */
+/**
+ * Creates and remembers a [GapFillState] that survives recompositions, configuration changes
+ * (e.g. rotation) and process death.
+ */
 @Composable
-fun rememberGapFillState(): GapFillState = remember { GapFillState() }
+fun rememberGapFillState(): GapFillState =
+    rememberSaveable(saver = GapFillState.Saver) { GapFillState() }

@@ -8,11 +8,14 @@ import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasAnyAncestor
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasTestTag
 import androidx.compose.ui.test.hasText
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -82,13 +85,23 @@ class GapFillTextTest {
         }
     }
 
+    /** Sets content directly, or through [tester] to emulate save/restore. */
+    private fun setContent(tester: StateRestorationTester?, content: @Composable () -> Unit) {
+        if (tester != null) tester.setContent(content) else rule.setContent(content)
+    }
+
+    /**
+     * @param state hoisted state; `null` uses the default [rememberGapFillState]
+     *              (which is what gets saved and restored).
+     */
     private fun setPopupContent(
-        state: GapFillState,
+        state: GapFillState?,
         observer: RecordingObserver = RecordingObserver(),
         reviewMode: Boolean = false,
         idleTimeoutMs: Long = 20_000L,
+        tester: StateRestorationTester? = null,
     ) {
-        rule.setContent {
+        setContent(tester) {
             GapFillText(
                 config = GapFillConfig(
                     rawText = dialogueText,
@@ -99,7 +112,7 @@ class GapFillTextTest {
                     reviewMode = reviewMode,
                     idleTimeoutMs = idleTimeoutMs,
                 ),
-                state = state,
+                state = state ?: rememberGapFillState(),
                 answerChecker = KeyChecker(dialogueKey),
                 resultObserver = observer,
                 modifier = Modifier.testTag(TAG),
@@ -107,8 +120,12 @@ class GapFillTextTest {
         }
     }
 
-    private fun setEditorContent(state: GapFillState, wordLimit: Int = 128) {
-        rule.setContent {
+    private fun setEditorContent(
+        state: GapFillState?,
+        wordLimit: Int = 128,
+        tester: StateRestorationTester? = null,
+    ) {
+        setContent(tester) {
             GapFillText(
                 config = GapFillConfig(
                     rawText = "**My hometown**\nMy {} is Edinburgh. It's a really {} city.",
@@ -118,7 +135,7 @@ class GapFillTextTest {
                     editorWarningMsg = "Too many words",
                     editorConfirmText = "OK",
                 ),
-                state = state,
+                state = state ?: rememberGapFillState(),
                 modifier = Modifier.testTag(TAG),
             )
         }
@@ -380,6 +397,42 @@ class GapFillTextTest {
         rule.onNode(hasSetTextAction()).performTextInput(" three")
         rule.onNodeWithText("Too many words").assertIsDisplayed()
         rule.onNodeWithText("OK").assertDoesNotExist()
+    }
+
+    // ── State restoration (rotation / process death) ─────────────────────────
+
+    @Test
+    fun answersAndOpenPopup_surviveSavedStateRestore() {
+        val tester = StateRestorationTester(rule)
+        setPopupContent(state = null, tester = tester)
+
+        clickBlank("How's my mouse?")
+        rule.onNodeWithText("How's my monitor?").performClick()
+        rule.waitForIdle()
+        clickBlank("Good bye.") // leave blank #1's popup open
+
+        tester.emulateSavedInstanceStateRestore()
+
+        gapFillTextNode("How's my monitor?").assertExists()
+        assertEquals(correctColor, colorOf("How's my monitor?"))
+        rule.onNodeWithText(DEFAULT_DELETION_LABEL).assertIsDisplayed()
+        rule.onNodeWithText("See you later.").assertIsDisplayed()
+    }
+
+    @Test
+    fun editorDraft_survivesSavedStateRestore() {
+        val tester = StateRestorationTester(rule)
+        setEditorContent(state = null, tester = tester)
+
+        clickBlank("____", occurrence = 1)
+        rule.onNode(hasSetTextAction()).performTextInput("lovely")
+
+        tester.emulateSavedInstanceStateRestore()
+
+        rule.onNode(hasSetTextAction()).assertTextEquals("lovely")
+        rule.onNodeWithText("OK").performClick()
+        rule.waitForIdle()
+        gapFillTextNode("really lovely city").assertExists()
     }
 
     // ── Configuration validation ──────────────────────────────────────────────
