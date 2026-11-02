@@ -13,9 +13,12 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.rayworks:RichTextView:2.0.0'
+    implementation 'com.github.rayworks:RichTextView:3.0.0'
 }
 ```
+
+> **3.0.0** adds the Jetpack Compose `GapFillText` and raises the minimum SDK to **21**
+> (previously 15). Apps that still support API 15–20 should stay on `2.0.0`.
 
 ## Snapshots
 

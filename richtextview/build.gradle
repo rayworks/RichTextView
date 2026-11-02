@@ -1,7 +1,9 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
+apply plugin: 'maven-publish'
 
-version = "2.0.0"
+group = 'com.github.rayworks'
+version = '3.0.0'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
@@ -34,6 +36,11 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
+        }
+    }
 }
 
 dependencies {
@@ -44,14 +51,16 @@ dependencies {
 
     implementation 'com.jakewharton.timber:timber:4.1.2'
 
-    // Jetpack Compose BOM — pins all compose-* versions consistently.
+    // Jetpack Compose BOM — pins all compose-* versions consistently. Exported (api) so
+    // consumers get matching versions of the Compose types used by the public API
+    // (Modifier, TextStyle, Color, PaddingValues, @Composable).
     def composeBom = platform('androidx.compose:compose-bom:2024.02.01')
-    implementation composeBom
-    implementation 'androidx.compose.ui:ui'
-    implementation 'androidx.compose.ui:ui-text'
-    implementation 'androidx.compose.foundation:foundation'
+    api composeBom
+    api 'androidx.compose.runtime:runtime'
+    api 'androidx.compose.ui:ui'
+    api 'androidx.compose.ui:ui-text'
+    api 'androidx.compose.foundation:foundation'
     implementation 'androidx.compose.material3:material3'
-    implementation 'androidx.compose.runtime:runtime'
     implementation 'androidx.compose.animation:animation'
 
     // Instrumented Compose UI tests.
@@ -60,4 +69,34 @@ dependencies {
     androidTestImplementation 'androidx.compose.ui:ui-test-manifest'
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test:runner:1.5.2'
+}
+
+// Maven publication (used by JitPack: com.github.rayworks:RichTextView:<tag>).
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = project.group
+                artifactId = 'RichTextView'
+                version = project.version
+
+                pom {
+                    name = 'RichTextView for Android'
+                    description = 'A TextView (and Jetpack Compose GapFillText) for filling in gaps in text.'
+                    url = 'https://github.com/rayworks/RichTextView'
+                    licenses {
+                        license {
+                            name = 'The Apache Software License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    scm {
+                        connection = 'scm:git:https://github.com/rayworks/RichTextView.git'
+                        url = 'https://github.com/rayworks/RichTextView'
+                    }
+                }
+            }
+        }
+    }
 }

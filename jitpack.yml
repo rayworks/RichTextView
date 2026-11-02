@@ -1,0 +1,3 @@
+# AGP 8 requires JDK 17 to build.
+jdk:
+  - openjdk17
