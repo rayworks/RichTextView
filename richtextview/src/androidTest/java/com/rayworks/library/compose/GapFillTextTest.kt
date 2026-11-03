@@ -27,6 +27,7 @@ import com.rayworks.library.listener.AnswerCorrectionChecker
 import com.rayworks.library.listener.AnswerResultObserver
 import com.rayworks.library.text.InputStyle
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -354,6 +355,41 @@ class GapFillTextTest {
         assertEquals(listOf("idle", "idle"), observer.events)
     }
 
+    @Test
+    fun idleCallback_resumesAfterResetOnceAllBlanksWereFilled() {
+        val state = GapFillState()
+        val observer = RecordingObserver()
+        rule.mainClock.autoAdvance = false
+        setPopupContent(state, observer, idleTimeoutMs = 1_000L)
+
+        // Filling every blank stops the idle reminders.
+        rule.runOnUiThread {
+            state.filledAnswers = mapOf(0 to "How's my monitor?", 1 to DELETION_SYMBOL)
+        }
+        rule.mainClock.advanceTimeBy(3_000L)
+        assertEquals(emptyList<String>(), observer.events)
+
+        // Resetting must restart them without requiring another tap.
+        rule.runOnUiThread { state.reset() }
+        rule.mainClock.advanceTimeBy(1_100L)
+        assertEquals(listOf("idle"), observer.events)
+    }
+
+    @Test
+    fun idleCallback_keepsFiringWhileOnlyStrayAnswerKeysExist() {
+        // Two answers, but neither belongs to blank #1: the exercise is not complete.
+        val state = GapFillState()
+        val observer = RecordingObserver()
+        rule.mainClock.autoAdvance = false
+        setPopupContent(state, observer, idleTimeoutMs = 1_000L)
+
+        rule.runOnUiThread { state.filledAnswers = mapOf(0 to "How's my monitor?", 5 to "x") }
+        rule.mainClock.advanceTimeBy(1_100L)
+
+        assertEquals(listOf("idle"), observer.events)
+        assertEquals(false, state.isComplete(2))
+    }
+
     // ── Editor (free form) ────────────────────────────────────────────────────
 
     @Test
@@ -440,6 +476,29 @@ class GapFillTextTest {
     @Test(expected = IllegalArgumentException::class)
     fun popupConfig_requiresOptions() {
         GapFillConfig(rawText = dialogueText, inputStyle = InputStyle.POPUP_WINDOW)
+    }
+
+    @Test
+    fun config_rejectsNonPositiveIdleTimeout() {
+        for (timeout in listOf(0L, -1L)) {
+            assertThrows(IllegalArgumentException::class.java) {
+                GapFillConfig(rawText = dialogueText, optionItems = dialogueOptions, idleTimeoutMs = timeout)
+            }
+        }
+    }
+
+    @Test
+    fun formattedFullText_rejectsMissingOrOutOfRangeAnswerKeys() {
+        // Right number of answers, wrong blanks: must not produce "{null}".
+        val sparse = GapFillState().apply { filledAnswers = mapOf(0 to "a", 2 to "b") }
+        assertThrows(IllegalStateException::class.java) { sparse.formattedFullText(dialogueText) }
+
+        // An extra out-of-range key alongside a complete set is rejected too.
+        val extra = GapFillState().apply { filledAnswers = mapOf(0 to "a", 1 to "b", 2 to "c") }
+        assertThrows(IllegalStateException::class.java) { extra.formattedFullText(dialogueText) }
+
+        val exact = GapFillState().apply { filledAnswers = mapOf(0 to "a", 1 to "b") }
+        assertEquals("Jenny: Hi. {a}\nJohn: {b} The end.", exact.formattedFullText(dialogueText))
     }
 
     @Test(expected = IllegalArgumentException::class)

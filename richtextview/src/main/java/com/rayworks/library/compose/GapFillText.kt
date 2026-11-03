@@ -83,6 +83,9 @@ data class GapFillConfig(
                 "optionItems cannot be empty for POPUP_WINDOW style"
             }
         }
+        // delay() returns immediately for non-positive values, which would turn the idle
+        // loop into a busy loop on the main thread.
+        require(idleTimeoutMs > 0) { "idleTimeoutMs must be positive, was $idleTimeoutMs" }
     }
 }
 
@@ -140,11 +143,19 @@ fun GapFillText(
     // ── Idle-state detection ──────────────────────────────────────────────────
     // Equivalent to handler.removeCallbacks + postDelayed in the original: every interaction
     // restarts the effect; while blanks remain unfilled, onIdleState() fires once per timeout.
-    LaunchedEffect(interactionKey, parsed, config.idleTimeoutMs, config.reviewMode) {
+    // Keying on the answer count also restarts it when an answer is chosen or the state is
+    // reset (after the loop has stopped because every blank was filled).
+    LaunchedEffect(
+        interactionKey,
+        parsed,
+        config.idleTimeoutMs,
+        config.reviewMode,
+        state.filledAnswers.size,
+    ) {
         if (!parsed.errorCorrectionEnabled || config.reviewMode) return@LaunchedEffect
         while (true) {
             delay(config.idleTimeoutMs)
-            if (state.filledAnswers.size >= parsed.totalBlanks) break
+            if (state.isComplete(parsed.totalBlanks)) break
             currentObserver?.onIdleState()
         }
     }
@@ -193,9 +204,10 @@ fun GapFillText(
         }
 
         val correctNum = checker?.retrieveCorrectAnswers(answers) ?: 0
-        observer.onAnswerSelected(correctNum, state.filledAnswers.size, parsed.totalBlanks)
+        val finishedNum = (0 until parsed.totalBlanks).count { state.filledAnswers.containsKey(it) }
+        observer.onAnswerSelected(correctNum, finishedNum, parsed.totalBlanks)
 
-        if (state.filledAnswers.size == parsed.totalBlanks && checker != null) {
+        if (state.isComplete(parsed.totalBlanks) && checker != null) {
             observer.onHandleAllAnswerCorrect(checker.allAnswerCorrect(answers))
         }
     }

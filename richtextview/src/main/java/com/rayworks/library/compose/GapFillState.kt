@@ -35,6 +35,15 @@ class GapFillState {
     }
 
     /**
+     * Returns `true` when every blank index from 0 until [totalBlanks] has an answer.
+     *
+     * Unlike comparing `filledAnswers.size`, this is not fooled by sparse or out-of-range keys
+     * written directly to [filledAnswers].
+     */
+    fun isComplete(totalBlanks: Int): Boolean =
+        (0 until totalBlanks).all { filledAnswers.containsKey(it) }
+
+    /**
      * Returns the first blank index that has not yet been answered, or `null` if all blanks
      * have been filled.
      *
@@ -49,7 +58,8 @@ class GapFillState {
     /**
      * Returns the filled text with every answered blank substituted back into [rawText].
      *
-     * @throws IllegalStateException if not all blanks have been answered.
+     * @throws IllegalStateException if not every blank has an answer, or [filledAnswers]
+     *         contains keys that are not blank indices of [rawText].
      */
     fun formattedFullText(rawText: String): String {
         // Apply the same normalisation used during parsing.
@@ -62,8 +72,9 @@ class GapFillState {
         val blankRegex = Regex("\\{.*?\\}")
         val matches = blankRegex.findAll(normalised).toList()
         val blankCount = matches.size
-        check(filledAnswers.size == blankCount) {
-            "Not all blanks have been filled: expected $blankCount, got ${filledAnswers.size}"
+        check(filledAnswers.keys == (0 until blankCount).toSet()) {
+            "Answers must contain exactly one entry per blank: expected keys " +
+                "0..${blankCount - 1}, got ${filledAnswers.keys.sorted()}"
         }
 
         return buildString {
