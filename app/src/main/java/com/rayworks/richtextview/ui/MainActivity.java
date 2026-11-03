@@ -1,5 +1,6 @@
 package com.rayworks.richtextview.ui;
 
+import android.content.Intent;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -20,6 +21,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         Timber.plant(new Timber.DebugTree());
+
+        findViewById(R.id.greetingTxt).setOnClickListener(
+                v -> startActivity(new Intent(this, ComposeSampleActivity.class)));
 
         GapFillTextView textView = findViewById(R.id.richText);
         String raw = "**My hometown**\n\nBy Kelly Scott\n \nMy {} is Edinburgh, in Scotland. " +

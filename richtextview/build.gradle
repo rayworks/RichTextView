@@ -1,22 +1,44 @@
 apply plugin: 'com.android.library'
-apply plugin: 'com.github.dcendents.android-maven'
-apply plugin: 'com.jfrog.bintray'
+apply plugin: 'kotlin-android'
+apply plugin: 'maven-publish'
 
-version = "2.0.0"
+group = 'com.github.rayworks'
+version = '3.0.0'
 
 android {
     compileSdkVersion rootProject.ext.compileSdkVersion
+    namespace 'com.rayworks.library'
 
     defaultConfig {
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.8"
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    publishing {
+        singleVariant('release') {
+            withSourcesJar()
         }
     }
 }
@@ -25,77 +47,56 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     testImplementation 'junit:junit:4.12'
     implementation "androidx.appcompat:appcompat:$rootProject.ext.appcompat_x"
+    implementation 'androidx.core:core-ktx:1.12.0'
 
     implementation 'com.jakewharton.timber:timber:4.1.2'
+
+    // Jetpack Compose BOM — pins all compose-* versions consistently. Exported (api) so
+    // consumers get matching versions of the Compose types used by the public API
+    // (Modifier, TextStyle, Color, PaddingValues, @Composable).
+    def composeBom = platform('androidx.compose:compose-bom:2024.02.01')
+    api composeBom
+    api 'androidx.compose.runtime:runtime'
+    api 'androidx.compose.ui:ui'
+    api 'androidx.compose.ui:ui-text'
+    api 'androidx.compose.foundation:foundation'
+    implementation 'androidx.compose.material3:material3'
+    implementation 'androidx.compose.animation:animation'
+
+    // Instrumented Compose UI tests.
+    androidTestImplementation composeBom
+    androidTestImplementation 'androidx.compose.ui:ui-test-junit4'
+    androidTestImplementation 'androidx.compose.ui:ui-test-manifest'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test:runner:1.5.2'
 }
 
-def siteUrl = 'https://github.com/rayworks/RichTextView'
-def gitUrl = 'https://github.com/rayworks/RichTextView.git'
-group = "com.rayworks.library"
+// Maven publication (used by JitPack: com.github.rayworks:RichTextView:<tag>).
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                from components.release
+                groupId = project.group
+                artifactId = 'RichTextView'
+                version = project.version
 
-install {
-    repositories.mavenInstaller {
-        // This generates POM.xml with proper parameters
-        pom {
-            project {
-                packaging 'aar'
-                name 'RichTextView for Android'
-                url siteUrl
-                licenses {
-                    license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                pom {
+                    name = 'RichTextView for Android'
+                    description = 'A TextView (and Jetpack Compose GapFillText) for filling in gaps in text.'
+                    url = 'https://github.com/rayworks/RichTextView'
+                    licenses {
+                        license {
+                            name = 'The Apache Software License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
                     }
-                }
-                developers {
-                    developer {
-                        id 'rayworks'
-                        name 'Sean Zhou'
-                        email 'crayzhou@gmail.com'
+                    scm {
+                        connection = 'scm:git:https://github.com/rayworks/RichTextView.git'
+                        url = 'https://github.com/rayworks/RichTextView'
                     }
-                }
-                scm {
-                    connection gitUrl
-                    developerConnection gitUrl
-                    url siteUrl
                 }
             }
         }
-    }
-}
-
-task sourcesJar(type: Jar) {
-    from android.sourceSets.main.java.srcDirs
-    classifier = 'sources'
-}
-
-task javadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
-artifacts {
-    archives javadocJar
-    archives sourcesJar
-}
-
-Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
-bintray {
-    user = properties.getProperty("bintray.user")
-    key = properties.getProperty("bintray.apikey")
-    configurations = ['archives']
-    pkg {
-        repo = "maven"
-        name = "RichTextView"
-        websiteUrl = siteUrl
-        vcsUrl = gitUrl
-        licenses = ["Apache-2.0"]
-        publish = true
     }
 }

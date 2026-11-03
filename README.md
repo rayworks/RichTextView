@@ -13,9 +13,12 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.github.rayworks:RichTextView:2.0.0'
+    implementation 'com.github.rayworks:RichTextView:3.0.0'
 }
 ```
+
+> **3.0.0** adds the Jetpack Compose `GapFillText` and raises the minimum SDK to **21**
+> (previously 15). Apps that still support API 15–20 should stay on `2.0.0`.
 
 ## Snapshots
 
@@ -25,6 +28,28 @@ dependencies {
 ## Instructions
 
 `GapFillTextView` can be treated as normal text view, besides that, it provides 2 ways to fill the gaps marked by '{*}'.
+
+### Jetpack Compose
+
+The library also ships a Compose reimplementation, `GapFillText`, with the same input styles,
+answer colouring, deletion option, review mode and `AnswerCorrectionChecker` / `AnswerResultObserver` callbacks.
+
+```kotlin
+val state = rememberGapFillState()
+
+GapFillText(
+    config = GapFillConfig(
+        rawText = "My {} is Edinburgh. It's a really {} city.",
+        optionItems = listOf(listOf("home", "hometown"), listOf("nice", "", "big")), // "" = delete option
+        inputStyle = InputStyle.POPUP_WINDOW, // or InputStyle.EDITOR_TEXT
+    ),
+    state = state,                 // state.filledAnswers, state.reset(), state.formattedFullText(raw)
+    answerChecker = checker,       // optional
+    resultObserver = observer,     // optional
+)
+```
+
+See `ComposeSampleActivity` in the sample app (opened from the "Open Compose version" button).
 
 ## Note
 
